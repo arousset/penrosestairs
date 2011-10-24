@@ -36,6 +36,12 @@ static int scn = 0;
 static int n = 18;
 static int aff = 1;
 
+static float posx = -1.0;
+static float posy = 0.8;
+static float posz = 0.0;
+
+float angle = 0.0;
+
 /* Fonction d'initialisation des parametres     */
 /* OpenGL ne changeant pas au cours de la vie   */
 /* du programme                                 */
@@ -49,13 +55,44 @@ void init(void) {
 
 /* Scene dessinee                               */
 
+void face(int x)
+{
+	int y = 2;
+	for(int i = 0;i < x;i++)
+	{
+		glPushMatrix();
+		for(int j = 0;j < 1;j++)
+		{
+			glutSolidCube(1.0);
+			glTranslatef(0.0, 1.0, 0.0);
+		}
+		glPopMatrix();
+		glTranslatef(1.0, 0.2, 0.0);
+	}
+}
+
 void scene(void) {
-	glPushMatrix();
+	/*glPushMatrix();
 	glutSolidTorus(1.0,9.0F,n,n*8);
 	glRotatef(90.0F,1.0F,0.0F,0.0F);
 	glutSolidTorus(1.0,9.0F,n,n*8);
 	glRotatef(90.0F,0.0F,1.0F,0.0F);
 	glutSolidTorus(1.0,9.0F,n,n*8);
+	glPopMatrix();*/
+	glPushMatrix();
+	face(3);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	face(6);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	face(6);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	face(3);
+
+	glTranslatef(posx, posy, posz);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	
+	glutSolidSphere(0.5,36,36);
+
 	glPopMatrix();
 }
 
@@ -146,7 +183,7 @@ void reshape(int w,int h) {
 	glViewport(0,0,w,h); 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(14.0F,(float) w/h,80.0,120.0);
+	gluPerspective(8.0F,(float) w/h,80.0,120.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(0.0,0.0,100.0,0.0,0.0,0.0,0.0,1.0,0.0);
@@ -173,10 +210,56 @@ void display(void) {
 /* Fonction executee lorsqu'aucun evenement     */
 /* n'est en file d'attente                      */
 
+float speed = 0.01;
+float tmp = 0.0;
+float tmp2 = 0.0;
+int cptface = 0;
+
 void idle(void) {
-	rx += 0.3355F;
-	ry += 0.6117F;
-	rz += 0.4174F;
+	if(cptface == 0)
+		posx -= speed;
+	if(cptface == 1)
+		posz -= speed;
+	if(cptface == 2)
+		posx += speed;
+	if(cptface == 3)
+		posz += speed;
+	//posx -= speed;
+	tmp -= speed;
+	tmp2 -= speed;
+	if(tmp <= -1)
+	{
+		tmp = 0.0;
+		posy -= 0.2;
+	}
+	if(cptface == 0 && tmp2 <= -2.0)
+	{
+		angle = 90;
+		tmp2 = 0.0;
+		cptface++;
+	}
+	if(cptface == 1 && tmp2 <= -6.0)
+	{
+		angle = 180;
+		tmp2 = 0.0;
+		cptface++;
+	}
+	if(cptface == 2 && tmp2 <= -6.0)
+	{
+		angle = 270;
+		tmp2 = 0.0;
+		cptface++;
+	}
+	if(cptface == 3 && tmp2 <= -2.0)
+	{
+		tmp2 = 0.0;
+		tmp2 = 0;
+		cptface = 0;
+		posx = -1.0;
+		posy = 0.8;
+		posz = 0.0;
+	}
+
 	glutPostRedisplay();
 }
 
@@ -253,6 +336,13 @@ void keyboard(unsigned char key,int x,int y) {
 		break; }
 }
 
+void mousemove(int x, int y)
+{
+	rx = y/2;
+	ry = x/2;
+	glutPostRedisplay(); 
+}
+
 /* Fonction principale                          */
 
 int main(int argc,char **argv) {
@@ -266,6 +356,8 @@ int main(int argc,char **argv) {
 	glutSpecialFunc(special);
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
+	glutMotionFunc(mousemove);
+	glutIdleFunc(idle);
 	glutMainLoop();
 	return(0);
 }
