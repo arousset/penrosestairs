@@ -1,0 +1,1 @@
+L'escalier infini de Penrose en OpenGL
